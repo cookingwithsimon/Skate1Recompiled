@@ -2,8 +2,9 @@
 
 An unofficial native PC port of **skate** (EA Black Box, 2007) for Windows, made by
 statically recompiling the Xbox 360 executable to C++ with
-[ReXGlue](https://github.com/mchughalex/rexglue-skate3), the SDK fork used by the
-Skate 3 PC recompilation. Same approach as Skate2Port.
+[ReXGlue](https://github.com/rexglue/rexglue-sdk) v0.10.0, carrying the changes of
+[rexglue-skate3](https://github.com/mchughalex/rexglue-skate3), the SDK fork used by
+the Skate 3 PC recompilation. Same approach as Skate2Port.
 
 **No game files are included.** You need your own Xbox 360 copy of skate as an ISO.
 Everything derived from the game (extracted files, decrypted image, generated C++)
@@ -21,9 +22,6 @@ Ninja, Python 3. ReXGlue requires Clang.
 git clone --recursive https://github.com/cookingwithsimon/Skate1Recompiled
 cd Skate1Recompiled
 
-rem SDK fixes this port needs (see "SDK patch" below)
-git -C third_party/rexglue-sdk apply ../../patches/rexglue-sdk.patch
-
 rem 1. Extract your own ISO into game/
 powershell -ExecutionPolicy Bypass -File tools\extract_iso.ps1 -Iso "Skate. (USA).iso" -Out game
 
@@ -32,7 +30,7 @@ devenv.bat cmake --preset win-amd64-relwithdebinfo
 
 rem 3. Build the rexglue tool, then recompile the game (about 9 minutes)
 devenv.bat cmake --build out/build/win-amd64-relwithdebinfo --target rexglue
-third_party\rexglue-sdk\out\win-amd64\rexglue.exe codegen skate1_manifest.toml
+third_party\rexglue-sdk\out\win-amd64\rexgluerd.exe codegen skate1_manifest.toml
 
 rem 4. Reconfigure so CMake sees the generated sources, then build
 devenv.bat cmake --preset win-amd64-relwithdebinfo
@@ -40,7 +38,11 @@ devenv.bat cmake --build out/build/win-amd64-relwithdebinfo
 ```
 
 Copy `config/skate1.runtime.toml` next to `skate1.exe` as `skate1.toml`. It
-holds the settings Skate 1 needs (vsync, depth conversion, memory coherency).
+holds the settings Skate 1 needs (GPU plugin, vsync, depth conversion, memory
+coherency). Since SDK 0.10 the GPU emulation is a separate library,
+`rexgpu-xenos`, copied next to the exe by the build and selected by
+`gpu_plugin = 'xenos'`; without that line the game starts with no GPU.
+After the first build, codegen reruns on its own whenever its inputs change.
 `game_data_root` may be relative to the exe. A `portable.txt` beside the exe keeps
 saves in a `userdata` folder there.
 
@@ -65,9 +67,7 @@ cd third_party/rexglue-sdk
 for p in $(git config --file .gitmodules --get-regexp '\.path$' | awk '{print $2}'); do
   git submodule update --init --recursive "$p"
 done
-git -C thirdparty/imgui fetch origin tag v1.92.2 && git -C thirdparty/imgui checkout v1.92.2
 cd ../..
-git -C third_party/rexglue-sdk apply ../../patches/rexglue-sdk.patch
 
 python3 tools/extract_iso.py "Skate. (USA).iso" game
 
@@ -78,7 +78,7 @@ cmake -S third_party/rexglue-sdk -B out/sdk -G Ninja -DCMAKE_BUILD_TYPE=Release 
   -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
   -DCMAKE_OSX_ARCHITECTURES=arm64 -DREXGLUE_ENABLE_TRACY=OFF
 cmake --build out/sdk --target rexglue
-REXGLUE=third_party/rexglue-sdk/out/macos-arm64/rexglue   # the SDK writes the tool here, not under out/sdk
+REXGLUE=third_party/rexglue-sdk/out/mac-arm64/rexglue   # the SDK writes the tool here, not under out/sdk
 "$REXGLUE" codegen skate1_manifest.toml   # answer yes if it asks to write generated files
 
 cmake --preset macos-arm64-relwithdebinfo
@@ -90,30 +90,28 @@ next to the `skate1` binary. Copy `config/skate1.runtime.toml` there as
 `skate1.toml` and put the extracted `game/` folder beside it, or point
 `game_data_root` at it. The `d3d12_*` settings are ignored on macOS.
 
-## SDK patch
+## SDK
 
-`patches/rexglue-sdk.patch` applies on top of rexglue-skate3 commit `7eb0faf`:
+`third_party/rexglue-sdk` is upstream rexglue-sdk v0.10.0 with the rexglue-skate3
+fork (102 commits on v0.8.0) merged on top, plus the fixes this port needs, which
+used to be `patches/rexglue-sdk.patch`:
 
 - **codegen: vpkuwus/vpkuhus aliasing.** When the destination register equals a
   source (`vpkuwus v0,v12,v0`), the generated code overwrote its input mid-way.
   Skate 1's VP6 video decoder always uses that form, causing green block
-  corruption in every video.
+  corruption in every video. Still present upstream in v0.10.0.
+- **readback_resolve_force_length**: always reads back one exact resolve length
+  (the Skate 1 photo target).
 - **Guest backtrace** on calls to unregistered functions (finding missed functions).
-- **imgui**: works with stock imgui (the fork's pinned imgui commit is not fetchable),
-  and the overlay draw loop uses `CmdLists.Size`.
-- **Win32**: a lone Alt press no longer opens the system menu and freezes input.
-- **GPU page state**: the frame-end refresh of GPU-written page flags always copies
-  the whole table. The partial copy went into a buffer two frames stale and caused
-  alternating-frame flicker once frames got faster.
+- **imgui**: works with stock imgui (v1.92.5, the upstream pin; the fork's pinned
+  commit is not fetchable), and the overlay draw loop uses `CmdLists.Size`.
 
-The presets build with `REXGLUE_ENABLE_PERF_COUNTERS=OFF` (about 6% CPU saved
-on the GPU thread). To update an SDK checkout that has an older patch applied, run
-`git -C third_party/rexglue-sdk checkout -- src` and apply the patch again.
+The GPU page-state flicker fix and the Win32 Alt-key fix are gone: v0.10.0 fixes
+the first itself and replaced the Win32 window with SDL. The presets build with
+`REXGLUE_ENABLE_PERF_COUNTERS=OFF` (about 6% CPU saved on the GPU thread).
 
-If the `thirdparty/imgui` submodule fails to fetch its pinned commit, check out
-upstream imgui `v1.92.2` there (newer `master` dropped tab colour names the SDK
-still uses). That failure can stop `git submodule update` before the rest are
-fetched, so run it again per submodule if any folder under `thirdparty/` is empty.
+Linux builds of SDL need the X11 development headers, including libXi
+(XInput2), plus an audio backend (ALSA, PulseAudio or PipeWire).
 
 ## Layout
 
@@ -124,7 +122,6 @@ fetched, so run it again per submodule if any folder under `thirdparty/` is empt
 | `config/skate1.runtime.toml` | runtime settings to copy next to the exe |
 | `src/` | app shell (portable path handling) |
 | `tools/` | ISO extractor, codegen/build/run loop, missed-function scanners, screenshot and input scripts |
-| `patches/` | SDK changes |
 
 ## Credits
 

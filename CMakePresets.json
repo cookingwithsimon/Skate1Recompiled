@@ -29,6 +29,8 @@
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "clang-20",
                 "CMAKE_CXX_COMPILER": "clang++-20",
+                "CMAKE_C_FLAGS": "-march=x86-64-v2",
+                "CMAKE_CXX_FLAGS": "-march=x86-64-v2",
                 "REXGLUE_ENABLE_TRACY": "OFF",
                 "REXGLUE_ENABLE_PERF_COUNTERS": "OFF"
             },

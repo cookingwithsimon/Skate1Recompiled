@@ -1,3 +1,4 @@
+gpu_plugin = 'xenos'
 fullscreen = false
 game_data_root = 'game'
 log_level = 'info'
@@ -17,6 +18,21 @@ keybind_lstick_down = 'S'
 keybind_lstick_left = 'A'
 keybind_lstick_right = 'D'
 keybind_lstick_press = 'Z'
+# Binds Skate 1 relied on as SDK defaults before 0.10, pinned here because the
+# 0.10 defaults moved them (triggers to Q/E, back to Z which clashes above).
+keybind_left_trigger = 'RMB'
+keybind_right_trigger = 'LMB'
+keybind_left_shoulder = 'Q'
+keybind_right_shoulder = 'R'
+keybind_rstick_press = 'MMB'
+keybind_back = 'Tab'
+# SDK 0.10 can drive the right stick from keys and defaults those to the arrow
+# keys, which Skate 1 uses for the d-pad. Keep the right stick on the mouse.
+mnk_mouse = true
+keybind_rstick_up = ''
+keybind_rstick_down = ''
+keybind_rstick_left = ''
+keybind_rstick_right = ''
 d3d12_frame_latency_waitable_object = true
 d3d12_max_frame_latency = 1
 vsync = true
