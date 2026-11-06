@@ -1,5 +1,7 @@
 # Skate1Recompiled
 
+[![Listed on PlayPorted](https://playported.com/badge.svg)](https://playported.com/ports/383-skate/)
+
 An unofficial native PC port of **skate** (EA Black Box, 2007) for Windows, made by
 statically recompiling the Xbox 360 executable to C++ with
 [ReXGlue](https://github.com/mchughalex/rexglue-skate3), the SDK fork used by the
