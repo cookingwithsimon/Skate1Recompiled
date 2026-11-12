@@ -24,3 +24,5 @@ depth_float24_convert_in_pixel_shader = true
 depth_float24_round = true
 clear_memory_page_state = true
 readback_resolve_force_length = 983040
+draw_resolution_scale_x = 1
+draw_resolution_scale_y = 1
