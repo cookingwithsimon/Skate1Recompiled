@@ -132,3 +132,9 @@ fetched, so run it again per submodule if any folder under `thirdparty/` is empt
 
 ReXGlue SDK and the Skate 3 recompilation by their authors; this repo only adds
 the Skate 1 project, configuration and tools. skate is a trademark of Electronic Arts.
+
+## License
+
+GPL-3.0, see [LICENSE](LICENSE). This covers this repo's own files (project config,
+tools, `src/` and `patches/`). The ReXGlue SDK submodule and other third-party code
+keep their own licenses. No game files are included or covered.
