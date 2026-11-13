@@ -33,7 +33,9 @@ else()
     add_executable(skate1 ${SKATE1_SOURCES})
 endif()
 
-rexglue_setup_target(skate1)
+# Since SDK 0.10 the Xenos GPU emulation is a runtime-loaded plugin; this stages
+# rexgpu-xenos next to the exe (the runtime config selects it via gpu_plugin).
+rexglue_setup_target(skate1 GPU_PLUGINS xenos)
 
 # The SDK writes librexruntime into its own out/<platform> folder, but the host
 # only looks next to itself (@loader_path / $ORIGIN). Windows stages it via
