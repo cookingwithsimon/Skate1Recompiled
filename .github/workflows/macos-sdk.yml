@@ -1,15 +1,20 @@
 # Builds the patched ReXGlue SDK on an Apple Silicon runner. The game itself
 # can't be built in CI (codegen needs the user's own game files), so this only
 # checks that the SDK, runtime and rexglue tool compile and link on macOS.
+#
+# This job is a required check on main, so it runs on every pull request (no
+# path filter): a required check that never starts would block the merge.
 name: macOS SDK build
 
 on:
   push:
     branches: [main]
-    paths: ["patches/**", "third_party/**", "CMakePresets.json", ".github/workflows/macos-sdk.yml"]
   pull_request:
-    paths: ["patches/**", "third_party/**", "CMakePresets.json", ".github/workflows/macos-sdk.yml"]
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -32,9 +37,6 @@ jobs:
             git -C thirdparty/imgui checkout v1.92.2
           fi
           if git submodule status --recursive | grep '^-'; then exit 1; fi
-
-      - name: Apply SDK patch
-        run: git -C third_party/rexglue-sdk apply ../../patches/rexglue-sdk.patch
 
       - name: Install toolchain
         run: brew install llvm ninja molten-vk vulkan-loader
