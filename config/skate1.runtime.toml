@@ -41,6 +41,9 @@ vsync = true
 depth_float24_convert_in_pixel_shader = true
 depth_float24_round = true
 clear_memory_page_state = true
-readback_resolve_force_length = 983040
+# Off for now: the game resolves the photo target every frame, so forcing its
+# readback (983040) drains the GPU every frame and halves FPS on SDK 0.10.
+# MAG cover / saved photos may be black until a non-stalling readback lands.
+readback_resolve_force_length = 0
 draw_resolution_scale_x = 1
 draw_resolution_scale_y = 1
