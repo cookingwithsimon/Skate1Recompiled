@@ -96,7 +96,9 @@ next to the `skate1` binary. Copy `config/skate1.runtime.toml` there as
 
 `third_party/rexglue-sdk` is upstream rexglue-sdk v0.10.0 with the rexglue-skate3
 fork (102 commits on v0.8.0) merged on top, plus the fixes this port needs, which
-used to be `patches/rexglue-sdk.patch`:
+used to be `patches/rexglue-sdk.patch`. It lives on the `skate1-v0.10.0` branch of
+[cookingwithsimon/rexglue-skate3](https://github.com/cookingwithsimon/rexglue-skate3)
+(prepared by Kurtisone):
 
 - **codegen: vpkuwus/vpkuhus aliasing.** When the destination register equals a
   source (`vpkuwus v0,v12,v0`), the generated code overwrote its input mid-way.
