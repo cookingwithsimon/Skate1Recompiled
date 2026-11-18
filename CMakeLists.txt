@@ -13,7 +13,21 @@ if(NOT REXSDK_DIR AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/rexglue-sd
     set(REXSDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/rexglue-sdk" CACHE PATH "Path to rexglue-sdk source tree")
 endif()
 
-include(generated/rexglue.cmake)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/rexglue.cmake")
+    include(generated/rexglue.cmake)
+else()
+    # Fresh clone: codegen hasn't run yet. Configure only the SDK so the
+    # `rexglue` tool can be built; reconfigure after `rexglue codegen`.
+    if(NOT REXSDK_DIR)
+        message(FATAL_ERROR "generated/rexglue.cmake is missing and REXSDK_DIR is not set. "
+            "Initialize the SDK submodule (git submodule update --init --recursive) "
+            "or pass -DREXSDK_DIR=<path to rexglue-sdk>.")
+    endif()
+    add_subdirectory("${REXSDK_DIR}" rexglue-sdk)
+    message(STATUS "generated/rexglue.cmake not found: configured the SDK only. "
+        "Build the rexglue target, run codegen, then reconfigure.")
+    return()
+endif()
 
 # Sources
 set(SKATE1_SOURCES
@@ -33,7 +47,9 @@ else()
     add_executable(skate1 ${SKATE1_SOURCES})
 endif()
 
-rexglue_setup_target(skate1)
+# Since SDK 0.10 the Xenos GPU emulation is a runtime-loaded plugin; this stages
+# rexgpu-xenos next to the exe (the runtime config selects it via gpu_plugin).
+rexglue_setup_target(skate1 GPU_PLUGINS xenos)
 
 # The SDK writes librexruntime into its own out/<platform> folder, but the host
 # only looks next to itself (@loader_path / $ORIGIN). Windows stages it via
