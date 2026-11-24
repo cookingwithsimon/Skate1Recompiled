@@ -48,6 +48,17 @@ After the first build, codegen reruns on its own whenever its inputs change.
 `game_data_root` may be relative to the exe. A `portable.txt` beside the exe keeps
 saves in a `userdata` folder there.
 
+Common settings in `skate1.toml`:
+
+| Setting | Values |
+| --- | --- |
+| `gpu_backend` | `auto` (Direct3D 12 on Windows), `d3d12` or `vulkan` |
+| `draw_resolution_scale_x` / `_y` | `1` = original 720p (default), `2` = 1440p |
+| `fullscreen` | `true` / `false` |
+| `vsync` | `true` / `false` |
+
+There is no in-game settings menu yet, so edit the file and restart the game.
+
 To make the intro movies skippable, create an empty `game/data/AllowMovieSkip.txt`
 (the game checks for it; the retail disc doesn't ship it).
 

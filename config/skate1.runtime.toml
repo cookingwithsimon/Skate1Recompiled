@@ -1,4 +1,6 @@
 gpu_plugin = 'xenos'
+# Graphics API: 'auto' (Direct3D 12 on Windows), 'd3d12' or 'vulkan'.
+gpu_backend = 'auto'
 fullscreen = false
 game_data_root = 'game'
 log_level = 'info'
@@ -45,5 +47,6 @@ clear_memory_page_state = true
 # readback (983040) drains the GPU every frame and halves FPS on SDK 0.10.
 # MAG cover / saved photos may be black until a non-stalling readback lands.
 readback_resolve_force_length = 0
+# Internal render resolution: 1 = the original 720p, 2 = 1440p (heavier).
 draw_resolution_scale_x = 1
 draw_resolution_scale_y = 1
